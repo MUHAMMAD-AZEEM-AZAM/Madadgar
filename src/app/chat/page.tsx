@@ -19,6 +19,9 @@ type Message = {
     sender: 'user' | 'bot';
 };
 
+// In a real app, this would be a dynamic session ID, perhaps tied to a user.
+const SESSION_ID = "static-session-123";
+
 export default function ChatPage() {
     const { state } = useAppContext();
     const { language } = state;
@@ -44,7 +47,11 @@ export default function ChatPage() {
         setIsProcessing(true);
 
         try {
-            const response = await handleChat({ query: text, language });
+            const response = await handleChat({ 
+                query: text, 
+                language,
+                sessionId: SESSION_ID,
+            });
             const botMessage: Message = { id: (Date.now() + 1).toString(), text: response.reply, sender: 'bot' };
             setMessages(prev => [...prev, botMessage]);
         } catch (error) {

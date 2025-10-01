@@ -9,15 +9,19 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-// In a real app, you would use a database like Firestore.
-// For now, we'll use a simple in-memory store.
-// import { db } from '@/lib/firebase';
-// import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, query, orderBy, getDocs } from 'firebase/firestore';
 
+
+const ChatHistoryMessageSchema = z.object({
+    role: z.enum(['user', 'bot']),
+    text: z.string(),
+});
 
 const ChatInputSchema = z.object({
   query: z.string().describe('The user\'s message.'),
   language: z.enum(['en', 'ur']).describe('The language of the conversation.'),
+  sessionId: z.string().describe('The unique ID for the chat session.'),
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
@@ -32,12 +36,21 @@ export async function handleChat(input: ChatInput): Promise<ChatOutput> {
 
 const chatPrompt = ai.definePrompt({
     name: 'chatPrompt',
-    input: { schema: ChatInputSchema },
+    input: { schema: z.object({
+        query: z.string(),
+        language: z.string(),
+        history: z.array(ChatHistoryMessageSchema),
+    }) },
     output: { schema: ChatOutputSchema },
     prompt: `You are Madadgar, a helpful AI assistant for filling out forms in Pakistan. Your goal is to guide users through the form-filling process conversationally.
 
-    The user is starting a conversation.
-    - The user's query is: {{{query}}}
+    The user is continuing a conversation. Here is the history so far:
+    {{#each history}}
+      {{#if (eq role 'user')}}User: {{text}}{{/if}}
+      {{#if (eq role 'bot')}}Madadgar: {{text}}{{/if}}
+    {{/each}}
+    
+    The user's new message is: {{{query}}}
     - The conversation language is: {{{language}}}
 
     1.  **Analyze the query:** Determine if the user is asking to fill out a known form. Currently, you only know about the "passport application" form.
@@ -46,7 +59,7 @@ const chatPrompt = ai.definePrompt({
         - If the user asks about a form you don't know (e.g., "driving license"), politely tell them in their language that you can currently only help with passport applications.
         - For any other greeting or general question, provide a friendly, helpful response in their language, and gently guide them back to your purpose by asking what form they'd like to fill out.
 
-    Generate a single, concise response to the user's query.
+    Generate a single, concise response to the user's query based on the history and the new message.
     `,
 });
 
@@ -57,19 +70,36 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatOutputSchema,
   },
   async (input) => {
+    const { sessionId, query, language } = input;
+    const messageCollection = collection(db, "chat_sessions", sessionId, "messages");
 
-    // // Example of saving to Firestore (session handling)
-    // try {
-    //     await addDoc(collection(db, "chat_sessions", "some-session-id", "messages"), {
-    //         role: "user",
-    //         text: input.query,
-    //         createdAt: serverTimestamp(),
-    //     });
-    // } catch (e) {
-    //     console.error("Error adding document: ", e);
-    // }
+    // Save user message to Firestore
+    await addDoc(messageCollection, {
+        role: "user",
+        text: query,
+        createdAt: serverTimestamp(),
+    });
+    
+    // Fetch history
+    const historyQuery = await getDocs(query(messageCollection, orderBy("createdAt", "asc")));
+    const history = historyQuery.docs.map(doc => {
+        const data = doc.data();
+        return {
+            role: data.role,
+            text: data.text,
+        } as z.infer<typeof ChatHistoryMessageSchema>;
+    });
 
-    const { output } = await chatPrompt(input);
-    return output!;
+    const { output } = await chatPrompt({ query, language, history });
+    const reply = output!.reply;
+
+    // Save bot reply to Firestore
+    await addDoc(messageCollection, {
+        role: "bot",
+        text: reply,
+        createdAt: serverTimestamp(),
+    });
+    
+    return { reply };
   }
 );
