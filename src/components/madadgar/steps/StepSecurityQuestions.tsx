@@ -11,6 +11,7 @@ import { aiPoweredAccountCreation } from "@/ai/flows/ai-powered-account-creation
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const TOTAL_STEPS = 6;
 
@@ -24,6 +25,7 @@ export default function StepSecurityQuestions() {
   const { language, hasAccount } = state;
   const router = useRouter();
   const t = translations[language];
+  const isUrdu = language === 'ur';
 
   const [questions, setQuestions] = useState<SecurityQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -113,14 +115,14 @@ export default function StepSecurityQuestions() {
     >
       <div className="space-y-4">
         <div className="space-y-2">
-            <Label htmlFor="security-answer" className="text-muted-foreground" dir={language === 'ur' ? 'rtl' : 'ltr'}>
+            <Label htmlFor="security-answer" className={cn("text-muted-foreground", isUrdu && "font-urdu")} dir={isUrdu ? 'rtl' : 'ltr'}>
                 {`(${currentQuestionIndex + 1}/${questions.length}) ${currentQuestion.question}`}
             </Label>
             <Input
                 id="security-answer"
                 value={currentQuestion.answer}
                 onChange={(e) => updateAnswer(e.target.value)}
-                dir={language === 'ur' ? 'rtl' : 'ltr'}
+                dir={isUrdu ? 'rtl' : 'ltr'}
             />
         </div>
         <VoiceInput onTranscription={updateAnswer} />

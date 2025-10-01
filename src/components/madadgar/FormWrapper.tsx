@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAppContext } from "@/contexts/AppContext";
 import { translations } from "@/lib/translations";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface FormWrapperProps {
   title: string;
@@ -59,26 +60,28 @@ export function FormWrapper({
     }
   };
 
+  const isUrdu = state.language === 'ur';
+
   return (
     <Card className="w-full max-w-lg shadow-2xl border-0 md:border">
       <CardHeader>
         <Progress value={progressValue} className="mb-4 h-2" />
-        <CardTitle className="text-2xl md:text-3xl font-headline" dir={state.language === 'ur' ? 'rtl' : 'ltr'}>{title}</CardTitle>
-        <CardDescription dir={state.language === 'ur' ? 'rtl' : 'ltr'}>{description}</CardDescription>
+        <CardTitle className={cn("text-2xl md:text-3xl font-headline", isUrdu && "font-urdu")} dir={isUrdu ? 'rtl' : 'ltr'}>{title}</CardTitle>
+        <CardDescription className={cn(isUrdu && "font-urdu")} dir={isUrdu ? 'rtl' : 'ltr'}>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         {children}
       </CardContent>
       <CardFooter className="flex justify-between gap-4">
         {!isBackHidden && (
-            <Button variant="outline" onClick={handleBack} className="w-full md:w-auto">
+            <Button variant="outline" onClick={handleBack} className={cn("w-full md:w-auto", isUrdu && "font-urdu")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t.back}
             </Button>
         )}
         <div className="flex-grow md:hidden"/>
         {!isNextHidden && (
-            <Button onClick={handleNext} disabled={isNextDisabled} className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button onClick={handleNext} disabled={isNextDisabled} className={cn("w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent/90", isUrdu && "font-urdu")}>
                 {nextButtonText || t.next}
                 <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

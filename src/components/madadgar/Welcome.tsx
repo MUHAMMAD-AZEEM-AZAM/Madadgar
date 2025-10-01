@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/madadgar/LanguageSwitcher';
 import { ArrowRight } from 'lucide-react';
 import { Logo } from './Logo';
+import { cn } from '@/lib/utils';
 
 export default function Welcome() {
   const { state } = useAppContext();
@@ -38,15 +39,15 @@ export default function Welcome() {
                 <Logo className="w-12 h-12 text-primary" />
               </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold font-headline text-foreground" dir={language === 'ur' ? 'rtl' : 'ltr'}>
+          <h1 className={cn("text-4xl md:text-5xl font-bold font-headline text-foreground", language === 'ur' && "font-urdu")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
             {t.welcomeTitle}
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground" dir={language === 'ur' ? 'rtl' : 'ltr'}>
+          <p className={cn("mt-4 text-lg text-muted-foreground", language === 'ur' && "font-urdu")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
             {t.welcomeSubtitle}
           </p>
           <div className="mt-8 flex flex-col items-center gap-6">
             <LanguageSwitcher />
-            <Button asChild size="lg" className="w-full max-w-xs shadow-lg bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button asChild size="lg" className={cn("w-full max-w-xs shadow-lg bg-accent hover:bg-accent/90 text-accent-foreground", language === 'ur' && "font-urdu")}>
               <Link href="/start">
                 {t.getStarted}
                 <ArrowRight className="ml-2 h-5 w-5" />

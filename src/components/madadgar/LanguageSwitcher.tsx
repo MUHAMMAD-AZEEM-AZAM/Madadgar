@@ -31,7 +31,7 @@ export function LanguageSwitcher() {
         size="sm"
         onClick={() => setLanguage('ur')}
         className={cn(
-          "font-headline bg-opacity-80 backdrop-blur-sm",
+          "font-urdu bg-opacity-80 backdrop-blur-sm",
           language === 'ur' ? 'bg-primary text-primary-foreground' : 'bg-card/50 text-card-foreground border-border'
         )}
         dir="rtl"

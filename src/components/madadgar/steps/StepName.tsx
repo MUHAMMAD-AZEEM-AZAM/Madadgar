@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from 'react';
 import { FormWrapper } from "@/components/madadgar/FormWrapper";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

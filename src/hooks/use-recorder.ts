@@ -11,9 +11,6 @@ export const useRecorder = (onTranscriptionComplete: (text: string) => void) => 
   const [recorderState, setRecorderState] = useState<RecorderState>('idle');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserNodeRef = useRef<AnalyserNode | null>(null);
-  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
 
@@ -24,17 +21,6 @@ export const useRecorder = (onTranscriptionComplete: (text: string) => void) => 
       streamRef.current = stream;
       mediaRecorderRef.current = new MediaRecorder(stream);
       
-      // Setup audio analysis
-      if (!audioContextRef.current) {
-          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      const source = audioContextRef.current.createMediaStreamSource(stream);
-      const analyser = audioContextRef.current.createAnalyser();
-      source.connect(analyser);
-      analyserNodeRef.current = analyser;
-      setAnalyserNode(analyser);
-
-
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
@@ -43,7 +29,6 @@ export const useRecorder = (onTranscriptionComplete: (text: string) => void) => 
       
       mediaRecorderRef.current.onstop = async () => {
         setRecorderState('processing');
-        setAnalyserNode(null); // Stop visualizer
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         audioChunksRef.current = [];
         
@@ -99,6 +84,5 @@ export const useRecorder = (onTranscriptionComplete: (text: string) => void) => 
   return {
     recorderState,
     toggleRecording,
-    analyserNode,
   };
 };
