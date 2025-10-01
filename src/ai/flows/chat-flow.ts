@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getChatHistory, saveMessage, type ChatMessage } from '@/services/chat-service';
-import {googleSearch} from '@genkit-ai/google-genai';
+import {googleSearch} from '@genkit-ai/google-genai/tools';
 
 
 const ChatHistoryMessageSchema = z.object({
