@@ -22,7 +22,7 @@ export default function StepName() {
   useEffect(() => {
     // Prefill for development/testing
     if (process.env.NODE_ENV === 'development' && !formData.name) {
-      // updateName('Test User');
+      updateName('Muhammad Ali');
     }
   }, []);
 
@@ -46,7 +46,7 @@ export default function StepName() {
             dir={language === 'ur' ? 'rtl' : 'ltr'}
             />
         </div>
-        <VoiceInput onTranscription={updateName} disabled={!formData.name.trim === false} />
+        <VoiceInput onTranscription={updateName} />
       </div>
     </FormWrapper>
   );
