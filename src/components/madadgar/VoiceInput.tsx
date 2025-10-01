@@ -50,17 +50,19 @@ export function VoiceInput({ onTranscription, disabled }: VoiceInputProps) {
         return (
           <>
             <Mic />
-            <span className="ml-2">{t.voiceInput.speakNow}</span>
+            <span className="ml-2 sr-only">{t.voiceInput.speakNow}</span>
           </>
         );
     }
   };
 
+  const isChatPage = true; // Simplified for this context
+
   return (
     <Button
         type="button"
         variant="outline"
-        className={cn("w-full", state.language === 'ur' && "font-urdu")}
+        className={cn("w-full", state.language === 'ur' && "font-urdu", isChatPage && "w-auto h-10 px-3" )}
         onClick={toggleRecording}
         disabled={disabled || (recorderState !== 'idle' && recorderState !== 'recording')}
     >

@@ -66,8 +66,8 @@ export default function StepSecurityQuestions() {
           // All questions answered, proceed
           dispatch({ type: 'SET_SECURITY_ANSWERS', payload: questions });
           // In a real app, you'd save to backend here.
-          // For now, we simulate success and move to the dashboard.
-          router.push('/dashboard');
+          // For now, we simulate success and move to the chat page.
+          router.push('/chat');
       }
   };
 

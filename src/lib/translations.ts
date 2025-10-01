@@ -53,12 +53,17 @@ export const translations = {
       }
     },
     voiceInput: {
-      speakNow: "Speak now...",
+      speakNow: "Speak",
       recording: "Recording...",
       processing: "Processing...",
       error: "Sorry, I couldn't catch that. Please try again.",
       micPermissionError: "Microphone permission is denied. Please enable it in your browser settings."
     },
+    chat: {
+      welcomeMessage: "Hello! I am Madadgar. I can help you fill out forms. What form would you like to fill out today? For example, you can say 'passport application'.",
+      inputPlaceholder: "Type your message or use voice...",
+      errorMessage: "Sorry, something went wrong. Please try again."
+    }
   },
   ur: {
     appName: "مددگار",
@@ -114,12 +119,17 @@ export const translations = {
       }
     },
     voiceInput: {
-      speakNow: "اب بولیں...",
+      speakNow: "بولیں",
       recording: "ریکارڈنگ جاری ہے...",
       processing: "پروسیسنگ جاری ہے...",
       error: "معذرت، میں سمجھ نہیں سکا۔ براہ کرم دوبارہ کوشش کریں۔",
       micPermissionError: "مائیکروفون کی اجازت نہیں ہے۔ براہ کرم اسے اپنے براؤزر کی ترتیبات میں فعال کریں۔"
     },
+    chat: {
+      welcomeMessage: "ہیلو! میں مددگار ہوں۔ میں آپ کو فارم بھرنے میں مدد کر سکتا ہوں۔ آج آپ کون سا فارم بھرنا چاہیں گے؟ مثال کے طور پر، آپ کہہ سکتے ہیں 'پاسپورٹ کی درخواست'۔",
+      inputPlaceholder: "اپنا پیغام ٹائپ کریں یا آواز استعمال کریں...",
+      errorMessage: "معافی، کچھ غلط ہو گیا۔ براہ مہربانی دوبارہ کوشش کریں."
+    }
   },
 };
 

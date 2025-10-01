@@ -16,15 +16,16 @@ export default function StepComplete() {
   const t = translations[language];
 
   useEffect(() => {
-    // This step is only for users who chose not to save info.
-    // Users who created an account are redirected to /dashboard.
-    if (hasAccount) {
-      router.replace('/dashboard');
-    }
-  }, [hasAccount, router]);
+    // Redirect all users to the chat page now.
+    router.replace('/chat');
+  }, [router]);
+
+  // The content below will likely not be seen as the user is redirected.
+  // It's kept as a fallback.
 
   const handleFinish = () => {
     dispatch({ type: 'RESET' });
+    router.push('/');
   };
 
   return (
