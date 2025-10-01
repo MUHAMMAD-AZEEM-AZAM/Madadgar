@@ -9,8 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, getDocs } from 'firebase/firestore';
+import { getChatHistory, saveMessage, type ChatMessage } from '@/services/chat-service';
 
 
 const ChatHistoryMessageSchema = z.object({
@@ -71,34 +70,18 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     const { sessionId, query, language } = input;
-    const messageCollection = collection(db, "chat_sessions", sessionId, "messages");
-
-    // Save user message to Firestore
-    await addDoc(messageCollection, {
-        role: "user",
-        text: query,
-        createdAt: serverTimestamp(),
-    });
+    
+    // Save user message
+    await saveMessage(sessionId, { role: "user", text: query });
     
     // Fetch history
-    const historyQuery = await getDocs(query(messageCollection, orderBy("createdAt", "asc")));
-    const history = historyQuery.docs.map(doc => {
-        const data = doc.data();
-        return {
-            role: data.role,
-            text: data.text,
-        } as z.infer<typeof ChatHistoryMessageSchema>;
-    });
+    const history = await getChatHistory(sessionId);
 
     const { output } = await chatPrompt({ query, language, history });
     const reply = output!.reply;
 
-    // Save bot reply to Firestore
-    await addDoc(messageCollection, {
-        role: "bot",
-        text: reply,
-        createdAt: serverTimestamp(),
-    });
+    // Save bot reply
+    await saveMessage(sessionId, { role: "bot", text: reply });
     
     return { reply };
   }
