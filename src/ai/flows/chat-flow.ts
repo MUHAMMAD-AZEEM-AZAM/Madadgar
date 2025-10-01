@@ -10,6 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getChatHistory, saveMessage, type ChatMessage } from '@/services/chat-service';
+import {googleSearch} from '@genkit-ai/google-genai';
 
 
 const ChatHistoryMessageSchema = z.object({
@@ -41,6 +42,7 @@ const chatPrompt = ai.definePrompt({
         history: z.array(ChatHistoryMessageSchema),
     }) },
     output: { schema: ChatOutputSchema },
+    tools: [googleSearch],
     prompt: `You are Madadgar, a helpful AI assistant for filling out forms in Pakistan. Your goal is to guide users through the form-filling process conversationally.
 
     The user is continuing a conversation. Here is the history so far:
@@ -57,6 +59,7 @@ const chatPrompt = ai.definePrompt({
         - If the user mentions "passport" or a similar term, respond in the user's language that you can help with the passport application and ask them to confirm if they want to start.
         - If the user asks about a form you don't know (e.g., "driving license"), politely tell them in their language that you can currently only help with passport applications.
         - For any other greeting or general question, provide a friendly, helpful response in their language, and gently guide them back to your purpose by asking what form they'd like to fill out.
+        - If the user asks a question you don't know the answer to, use the provided search tool to find the information and answer their question.
 
     Generate a single, concise response to the user's query based on the history and the new message.
     `,
