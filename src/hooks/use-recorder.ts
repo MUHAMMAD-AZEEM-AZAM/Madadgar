@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToast } from './use-toast';
 import { urduVoiceInput } from '@/ai/flows/urdu-voice-input';
 
@@ -12,13 +12,29 @@ export const useRecorder = (onTranscriptionComplete: (text: string) => void) => 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
-
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const startRecording = async () => {
     setRecorderState('permission_pending');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
+
+      // Audio visualizer setup
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      source.connect(analyserRef.current);
+      analyserRef.current.fftSize = 256;
+      const bufferLength = analyserRef.current.frequencyBinCount;
+      dataArrayRef.current = new Uint8Array(bufferLength);
+
       mediaRecorderRef.current = new MediaRecorder(stream);
       
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -28,31 +44,35 @@ export const useRecorder = (onTranscriptionComplete: (text: string) => void) => 
       };
       
       mediaRecorderRef.current.onstop = async () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
         setRecorderState('processing');
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         audioChunksRef.current = [];
         
-        // Convert Blob to Data URI
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
           const base64Audio = reader.result as string;
           try {
             const { transcription } = await urduVoiceInput(base64Audio);
-            if (transcription) {
-              onTranscriptionComplete(transcription);
-              setRecorderState('idle');
-            } else {
-              throw new Error("Empty transcription");
-            }
-          } catch (error) {
+             if (transcription && transcription.toLowerCase() !== "could not understand audio clearly") {
+               onTranscriptionComplete(transcription);
+               setRecorderState('idle');
+             } else {
+               throw new Error(transcription || "Empty transcription");
+             }
+          } catch (error: any) {
             console.error('Transcription error:', error);
-            toast({ variant: 'destructive', description: "Sorry, I couldn't catch that. Please try again." });
+            const errorMessage = error.message === "Could not understand audio clearly" 
+              ? error.message
+              : "Sorry, an error occurred. Please try again.";
+            toast({ variant: 'destructive', description: errorMessage });
             setRecorderState('error');
             setTimeout(() => setRecorderState('idle'), 2000);
           }
         };
-        // Stop all tracks on the stream to turn off the mic indicator
         stream.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       };
@@ -84,5 +104,6 @@ export const useRecorder = (onTranscriptionComplete: (text: string) => void) => 
   return {
     recorderState,
     toggleRecording,
+    canvasRef,
   };
 };
