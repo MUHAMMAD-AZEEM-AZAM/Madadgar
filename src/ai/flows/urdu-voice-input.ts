@@ -33,7 +33,7 @@ const urduVoiceInputFlow = ai.defineFlow(
           media: {url: audioDataUri},
         },
         {
-          text: 'Transcribe the audio. The audio may be in either English or Urdu.',
+          text: 'Transcribe the audio. The audio may be in either English or Urdu. It might contain a name, date, or a CNIC number. If it is a CNIC number, transcribe it as a sequence of digits, separated by hyphens if spoken that way (e.g., "12345-1234567-1").',
         },
       ],
       model: googleAI('gemini-1.5-flash-latest'),
