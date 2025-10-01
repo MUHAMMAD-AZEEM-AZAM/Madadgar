@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAppContext } from "@/contexts/AppContext";
 import StepName from "@/components/madadgar/steps/StepName";
 import StepCnic from "@/components/madadgar/steps/StepCnic";
