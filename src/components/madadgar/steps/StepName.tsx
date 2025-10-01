@@ -19,12 +19,6 @@ export default function StepName() {
     dispatch({ type: "UPDATE_FORM_DATA", payload: { name } });
   };
   
-  useEffect(() => {
-    // Prefill for development/testing
-    if (process.env.NODE_ENV === 'development' && !formData.name) {
-      updateName('Muhammad Ali');
-    }
-  }, []);
 
   return (
     <FormWrapper

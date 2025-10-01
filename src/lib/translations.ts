@@ -16,7 +16,7 @@ export const translations = {
       name: {
         title: "What is your full name?",
         description: "Please state your full name as it appears on your official documents.",
-        placeholder: "e.g., John Doe"
+        placeholder: "e.g., Muhammad Ali"
       },
       cnic: {
         title: "What is your CNIC number?",
@@ -77,7 +77,7 @@ export const translations = {
       name: {
         title: "آپ کا پورا نام کیا ہے؟",
         description: "براہ کرم اپنا پورا نام بتائیں جیسا کہ آپ کے سرکاری دستاویزات پر لکھا ہے۔",
-        placeholder: "مثال کے طور پر، جان ڈو"
+        placeholder: "مثال کے طور پر، محمد علی"
       },
       cnic: {
         title: "آپ کا شناختی کارڈ نمبر کیا ہے؟",
