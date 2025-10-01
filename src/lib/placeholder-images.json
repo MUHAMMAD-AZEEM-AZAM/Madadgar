@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "madadgar-welcome",
+      "description": "A stylised illustration of two hands meeting in a handshake, symbolising help and partnership. The background is abstract with soft, overlapping shapes.",
+      "imageUrl": "https://images.unsplash.com/photo-1611934180042-da791b4091e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxoZWxwaW5nJTIwaGFuZHxlbnwwfHx8fDE3NTkyMjIyMDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "helping hand"
+    }
+  ]
 }
