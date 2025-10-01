@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {googleAI} from '@genkit-ai/google-genai';
 
 const UrduVoiceInputOutputSchema = z.object({
   transcription: z.string().describe('The transcribed text from the user\'s voice input.'),
@@ -35,10 +36,7 @@ const urduVoiceInputFlow = ai.defineFlow(
           text: 'Transcribe the audio. The audio may be in either English or Urdu.',
         },
       ],
-      model: 'gemini-2.5-flash-image-preview',
-      config: {
-        responseModalities: ['TEXT'],
-      },
+      model: googleAI('gemini-1.5-flash-latest'),
     });
     return {transcription: text!};
   }
