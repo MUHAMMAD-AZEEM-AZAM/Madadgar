@@ -38,6 +38,7 @@ const urduVoiceInputFlow = ai.defineFlow(
       ],
       model: googleAI('gemini-1.5-flash-latest'),
     });
+    
     return {transcription: text!};
   }
 );
