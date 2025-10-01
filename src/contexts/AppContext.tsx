@@ -37,7 +37,7 @@ type AppAction =
 
 // Initial state of the application
 const initialState: AppState = {
-  language: 'en',
+  language: 'ur',
   currentStep: 0,
   formData: {
     name: '',
