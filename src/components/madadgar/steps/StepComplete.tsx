@@ -31,17 +31,18 @@ export default function StepComplete() {
     <FormWrapper
       title={t.formSteps.complete.title}
       description={t.formSteps.complete.description}
-      currentStep={6}
+      currentStep={5}
       totalSteps={6}
       isBackHidden
       isNextHidden
+      titleClassName="mt-4"
     >
-        <div className="text-center space-y-6 flex flex-col items-center">
+        <div className="text-center space-y-8 flex flex-col items-center">
             <div className="p-6 bg-green-100 rounded-full">
                 <PartyPopper className="h-16 w-16 text-green-600" />
             </div>
-            <p className="text-muted-foreground">{t.formSteps.complete.description}</p>
-            <Button asChild onClick={handleFinish} className="w-full max-w-xs bg-accent text-accent-foreground hover:bg-accent/90">
+            <p className={`text-muted-foreground leading-relaxed ${language === 'ur' ? 'font-urdu leading-loose' : ''}`} dir={language === 'ur' ? 'rtl' : 'ltr'}>{t.formSteps.complete.description}</p>
+            <Button asChild onClick={handleFinish} className={`w-full max-w-xs bg-accent text-accent-foreground hover:bg-accent/90 ${language === 'ur' ? 'font-urdu' : ''}`}>
                 <Link href="/">{t.formSteps.complete.backToHome}</Link>
             </Button>
         </div>

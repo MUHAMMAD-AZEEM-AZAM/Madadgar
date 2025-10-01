@@ -17,27 +17,28 @@ export default function StepName() {
   const updateName = (name: string) => {
     dispatch({ type: "UPDATE_FORM_DATA", payload: { name } });
   };
-  
+
 
   return (
     <FormWrapper
       title={t.formSteps.name.title}
       description={t.formSteps.name.description}
-      currentStep={0}
+      currentStep={1}
       totalSteps={TOTAL_STEPS}
     >
-      <div className="space-y-4">
-        <div className="space-y-2">
-            <Label htmlFor="name" className="sr-only">
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <Label htmlFor="name" className="sr-only">
             {t.formSteps.name.title}
-            </Label>
-            <Input
+          </Label>
+          <Input
             id="name"
             placeholder={t.formSteps.name.placeholder}
             value={formData.name}
             onChange={(e) => updateName(e.target.value)}
             dir={language === 'ur' ? 'rtl' : 'ltr'}
-            />
+            className={`h-12 text-base ${language === 'ur' ? 'font-urdu' : ''}`}
+          />
         </div>
         <VoiceInput onTranscription={updateName} />
       </div>

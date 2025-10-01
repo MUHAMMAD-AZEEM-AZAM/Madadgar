@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { cn } from '@/lib/utils';
 import { AppProvider } from '@/contexts/AppContext';
 import { Toaster } from "@/components/ui/toaster"
 
@@ -30,7 +29,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={cn('min-h-screen bg-background font-body antialiased')}
+        className="min-h-screen bg-background font-body antialiased"
       >
         <AppProvider>
           {children}

@@ -22,11 +22,11 @@ export default function StepDob() {
     <FormWrapper
       title={t.formSteps.dob.title}
       description={t.formSteps.dob.description}
-      currentStep={2}
+      currentStep={3}
       totalSteps={TOTAL_STEPS}
     >
-      <div className="space-y-4">
-        <div className="space-y-2">
+      <div className="space-y-8">
+        <div className="space-y-4">
             <Label htmlFor="dob" className="sr-only">
             {t.formSteps.dob.title}
             </Label>
@@ -35,6 +35,7 @@ export default function StepDob() {
             placeholder={t.formSteps.dob.placeholder}
             value={formData.dob}
             onChange={(e) => updateDob(e.target.value)}
+            className={`h-12 text-base ${language === 'ur' ? 'font-urdu' : ''}`}
             />
         </div>
         <VoiceInput onTranscription={updateDob} />

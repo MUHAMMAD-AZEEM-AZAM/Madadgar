@@ -39,13 +39,13 @@ export default function Welcome() {
                 <Logo className="w-12 h-12 text-primary" />
               </div>
           </div>
-          <h1 className={cn("text-4xl md:text-5xl font-bold font-headline text-foreground", language === 'ur' && "font-urdu")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
+          <h1 className={cn("text-4xl md:text-5xl font-bold font-headline text-foreground leading-tight", language === 'ur' && "font-urdu leading-normal")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
             {t.welcomeTitle}
           </h1>
-          <p className={cn("mt-4 text-lg text-muted-foreground", language === 'ur' && "font-urdu leading-relaxed")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
+          <p className={cn("mt-6 text-lg text-muted-foreground leading-relaxed", language === 'ur' && "font-urdu leading-loose")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
             {t.welcomeSubtitle}
           </p>
-          <div className="mt-8 flex flex-col items-center gap-6">
+          <div className="mt-10 flex flex-col items-center gap-8">
             <LanguageSwitcher />
             <Button asChild size="lg" className={cn("w-full max-w-xs shadow-lg bg-accent hover:bg-accent/90 text-accent-foreground", language === 'ur' && "font-urdu")}>
               <Link href="/start">

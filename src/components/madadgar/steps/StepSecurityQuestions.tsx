@@ -34,7 +34,7 @@ export default function StepSecurityQuestions() {
   useEffect(() => {
     if (!hasAccount) {
       // If user chose not to save, skip this step and go to the end
-      dispatch({ type: "GO_TO_STEP", payload: TOTAL_STEPS });
+      dispatch({ type: "GO_TO_STEP", payload: 5 });
       return;
     }
 
@@ -87,14 +87,14 @@ export default function StepSecurityQuestions() {
       <FormWrapper
         title={t.formSteps.security.title}
         description={t.formSteps.security.description}
-        currentStep={5}
+        currentStep={4}
         totalSteps={TOTAL_STEPS}
         isNextDisabled
       >
-        <div className="space-y-4">
+        <div className="space-y-8">
             <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
         </div>
       </FormWrapper>
     );
@@ -106,16 +106,16 @@ export default function StepSecurityQuestions() {
     <FormWrapper
       title={t.formSteps.security.title}
       description={t.formSteps.security.description}
-      currentStep={5}
+      currentStep={4}
       totalSteps={TOTAL_STEPS}
       onNext={handleNextQuestion}
       onBack={handlePrevQuestion}
       isNextDisabled={!currentQuestion.answer.trim()}
       nextButtonText={isLastQuestion ? t.createAccount : t.next}
     >
-      <div className="space-y-4">
-        <div className="space-y-2">
-            <Label htmlFor="security-answer" className={cn("text-muted-foreground", isUrdu && "font-urdu leading-relaxed")} dir={isUrdu ? 'rtl' : 'ltr'}>
+      <div className="space-y-8">
+        <div className="space-y-4">
+            <Label htmlFor="security-answer" className={cn("text-muted-foreground text-sm leading-relaxed", isUrdu && "font-urdu leading-loose")} dir={isUrdu ? 'rtl' : 'ltr'}>
                 {`(${currentQuestionIndex + 1}/${questions.length}) ${currentQuestion.question}`}
             </Label>
             <Input
@@ -123,6 +123,7 @@ export default function StepSecurityQuestions() {
                 value={currentQuestion.answer}
                 onChange={(e) => updateAnswer(e.target.value)}
                 dir={isUrdu ? 'rtl' : 'ltr'}
+                className={`h-12 text-base ${isUrdu ? 'font-urdu' : ''}`}
             />
         </div>
         <VoiceInput onTranscription={updateAnswer} />
