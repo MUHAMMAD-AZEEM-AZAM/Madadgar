@@ -22,6 +22,7 @@ interface FormWrapperProps {
   nextButtonText?: string;
   isBackHidden?: boolean;
   isNextHidden?: boolean;
+  titleClassName?: string;
 }
 
 export function FormWrapper({
@@ -36,6 +37,7 @@ export function FormWrapper({
   nextButtonText,
   isBackHidden = false,
   isNextHidden = false,
+  titleClassName,
 }: FormWrapperProps) {
   const { state, dispatch } = useAppContext();
   const router = useRouter();
@@ -64,15 +66,17 @@ export function FormWrapper({
 
   return (
     <Card className="w-full max-w-lg shadow-2xl border-0 md:border">
-      <CardHeader>
-        <Progress value={progressValue} className="mb-4 h-2" />
-        <CardTitle className={cn("text-2xl md:text-3xl font-headline", isUrdu && "font-urdu")} dir={isUrdu ? 'rtl' : 'ltr'}>{title}</CardTitle>
-        <CardDescription className={cn(isUrdu && "font-urdu leading-relaxed")} dir={isUrdu ? 'rtl' : 'ltr'}>{description}</CardDescription>
+      <CardHeader className="space-y-6 pb-6">
+        <Progress value={progressValue} className="h-2" />
+        <div className="space-y-4">
+          <CardTitle className={cn("text-2xl md:text-3xl font-headline leading-tight", isUrdu && "font-urdu leading-normal", titleClassName)} dir={isUrdu ? 'rtl' : 'ltr'}>{title}</CardTitle>
+          <CardDescription className={cn("text-base leading-relaxed", isUrdu && "font-urdu leading-loose")} dir={isUrdu ? 'rtl' : 'ltr'}>{description}</CardDescription>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-8 py-6">
         {children}
       </CardContent>
-      <CardFooter className="flex justify-between gap-4">
+      <CardFooter className="flex justify-between gap-4 pt-6">
         {!isBackHidden && (
             <Button variant="outline" onClick={handleBack} className={cn("w-full md:w-auto", isUrdu && "font-urdu")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />

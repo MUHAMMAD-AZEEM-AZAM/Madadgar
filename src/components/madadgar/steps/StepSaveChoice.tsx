@@ -14,31 +14,32 @@ export default function StepSaveChoice() {
 
   const handleSave = () => {
     dispatch({ type: 'SET_HAS_ACCOUNT', payload: true });
-    // This will automatically go to next step (Security Questions) because of the dispatch
+    // This will automatically go to next step (Name input) because of the dispatch
   };
 
   const handleDontSave = () => {
     dispatch({ type: 'SET_HAS_ACCOUNT', payload: false });
-    // This will automatically go to next step (Completion screen)
+    // Skip to completion screen
+    dispatch({ type: 'GO_TO_STEP', payload: 5 });
   };
 
   return (
     <FormWrapper
       title={t.formSteps.saveChoice.title}
       description={t.formSteps.saveChoice.description}
-      currentStep={4}
+      currentStep={0}
       totalSteps={TOTAL_STEPS}
       isBackHidden
       isNextHidden
     >
-      <div className="space-y-4">
-        <Button onClick={handleSave} className="w-full h-16 text-lg bg-accent text-accent-foreground hover:bg-accent/90">
-            <Save className="mr-3 h-6 w-6" />
-            {t.formSteps.saveChoice.save}
+      <div className="space-y-8">
+        <Button onClick={handleSave} className={`w-full h-16 text-lg bg-accent text-accent-foreground hover:bg-accent/90 ${state.language === 'ur' ? 'font-urdu' : ''}`}>
+          <Save className="mr-3 h-6 w-6" />
+          {t.formSteps.saveChoice.save}
         </Button>
-        <Button onClick={handleDontSave} variant="outline" className="w-full h-16 text-lg">
-            <XCircle className="mr-3 h-6 w-6" />
-            {t.formSteps.saveChoice.dontSave}
+        <Button onClick={handleDontSave} variant="outline" className={`w-full h-16 text-lg ${state.language === 'ur' ? 'font-urdu' : ''}`}>
+          <XCircle className="mr-3 h-6 w-6" />
+          {t.formSteps.saveChoice.dontSave}
         </Button>
       </div>
     </FormWrapper>

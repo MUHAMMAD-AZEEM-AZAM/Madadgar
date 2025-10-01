@@ -64,7 +64,13 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
     case 'SET_SECURITY_ANSWERS':
         return { ...state, securityAnswers: action.payload };
     case 'SET_HAS_ACCOUNT':
-        return { ...state, hasAccount: action.payload, currentStep: state.currentStep + 1 };
+        if (action.payload) {
+          // User wants to save info, go to name step
+          return { ...state, hasAccount: action.payload, currentStep: 1 };
+        } else {
+          // User doesn't want to save, skip to completion
+          return { ...state, hasAccount: action.payload, currentStep: 5 };
+        }
     case 'RESET':
         return {
             ...initialState,

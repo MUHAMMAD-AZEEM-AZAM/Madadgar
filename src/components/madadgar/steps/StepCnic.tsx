@@ -31,11 +31,11 @@ export default function StepCnic() {
     <FormWrapper
       title={t.formSteps.cnic.title}
       description={t.formSteps.cnic.description}
-      currentStep={1}
+      currentStep={2}
       totalSteps={TOTAL_STEPS}
     >
-      <div className="space-y-4">
-        <div className="space-y-2">
+      <div className="space-y-8">
+        <div className="space-y-4">
             <Label htmlFor="cnic" className="sr-only">
             {t.formSteps.cnic.title}
             </Label>
@@ -44,6 +44,7 @@ export default function StepCnic() {
             placeholder={t.formSteps.cnic.placeholder}
             value={formData.cnic}
             onChange={(e) => updateCnic(e.target.value)}
+            className={`h-12 text-base ${language === 'ur' ? 'font-urdu' : ''}`}
             />
         </div>
         <VoiceInput onTranscription={updateCnic} />
