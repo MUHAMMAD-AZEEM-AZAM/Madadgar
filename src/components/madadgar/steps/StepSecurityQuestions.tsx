@@ -115,7 +115,7 @@ export default function StepSecurityQuestions() {
     >
       <div className="space-y-4">
         <div className="space-y-2">
-            <Label htmlFor="security-answer" className={cn("text-muted-foreground", isUrdu && "font-urdu")} dir={isUrdu ? 'rtl' : 'ltr'}>
+            <Label htmlFor="security-answer" className={cn("text-muted-foreground", isUrdu && "font-urdu leading-relaxed")} dir={isUrdu ? 'rtl' : 'ltr'}>
                 {`(${currentQuestionIndex + 1}/${questions.length}) ${currentQuestion.question}`}
             </Label>
             <Input

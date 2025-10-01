@@ -42,7 +42,7 @@ export default function Welcome() {
           <h1 className={cn("text-4xl md:text-5xl font-bold font-headline text-foreground", language === 'ur' && "font-urdu")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
             {t.welcomeTitle}
           </h1>
-          <p className={cn("mt-4 text-lg text-muted-foreground", language === 'ur' && "font-urdu")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
+          <p className={cn("mt-4 text-lg text-muted-foreground", language === 'ur' && "font-urdu leading-relaxed")} dir={language === 'ur' ? 'rtl' : 'ltr'}>
             {t.welcomeSubtitle}
           </p>
           <div className="mt-8 flex flex-col items-center gap-6">

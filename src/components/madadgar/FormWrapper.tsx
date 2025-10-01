@@ -67,7 +67,7 @@ export function FormWrapper({
       <CardHeader>
         <Progress value={progressValue} className="mb-4 h-2" />
         <CardTitle className={cn("text-2xl md:text-3xl font-headline", isUrdu && "font-urdu")} dir={isUrdu ? 'rtl' : 'ltr'}>{title}</CardTitle>
-        <CardDescription className={cn(isUrdu && "font-urdu")} dir={isUrdu ? 'rtl' : 'ltr'}>{description}</CardDescription>
+        <CardDescription className={cn(isUrdu && "font-urdu leading-relaxed")} dir={isUrdu ? 'rtl' : 'ltr'}>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         {children}
