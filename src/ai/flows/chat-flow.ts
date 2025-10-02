@@ -1,11 +1,8 @@
 "use server";
-import { ai } from '@/ai/genkit';  // ai is already an instance
+import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getChatHistory, saveMessage } from '@/services/chat-service';
 import { googleAI } from '@genkit-ai/google-genai';
-
-// Possibly also import the google plugin (if needed) from your genkit setup
-// But since ai is already created with that plugin, we just use `ai`.
 
 const ChatHistoryMessageSchema = z.object({
   role: z.enum(['user', 'bot']),
@@ -39,11 +36,27 @@ const chatPrompt = ai.definePrompt({
   },
   output: { schema: ChatOutputSchema },
   tools: [
-    // depending on how tools are exposed in your `ai`
-    // e.g. maybe `ai.tools.googleSearch` or another path
-    ai.tools?.googleSearch  // (or the correct tool reference)
+    ai.tools.googleSearch
   ].filter(Boolean),
-  prompt: `You are Madadgar … (same prompt as before)`,
+  prompt: `You are Madadgar, a friendly and helpful AI assistant designed to help users, particularly those in Pakistan who may have low literacy, fill out official forms. Your primary language for interaction is Urdu, but you can also communicate in English if the user prefers.
+
+Current Conversation History:
+{{#each history}}
+- {{role}}: {{text}}
+{{/each}}
+
+New User Query: "{{query}}"
+
+Your Task:
+1.  Understand the user's request, which will be related to filling out a form (e.g., passport application, CNIC renewal).
+2.  If the user asks a general question, use your knowledge and the available search tool to answer it.
+3.  If the user wants to start filling a form and you need their personal details (like name, CNIC, DOB), you can simplify the process by suggesting they upload a picture of their CNIC. For example, you can say: "To make this faster, you can upload a picture of your CNIC."
+4.  Engage in a natural, step-by-step conversation. Ask one question at a time.
+5.  Your responses should be in the user's selected language ({{language}}). For Urdu, use Urdu script.
+6.  Be polite, patient, and encouraging throughout the conversation.
+
+Based on the new query and the history, provide the next appropriate response.
+`,
 });
 
 const chatFlow = ai.defineFlow(

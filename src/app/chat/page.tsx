@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { VoiceInput } from '@/components/madadgar/VoiceInput';
-import { Send, User } from 'lucide-react';
+import { Send, User, Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppContext } from '@/contexts/AppContext';
 import { translations } from '@/lib/translations';
 import { Logo } from '@/components/madadgar/Logo';
 import { handleChat } from '@/ai/flows/chat-flow';
+import { extractInfoFromDocument } from '@/ai/flows/extract-info-from-document-flow';
+import { useToast } from '@/hooks/use-toast';
 
 type Message = {
     id: string;
@@ -23,10 +25,11 @@ type Message = {
 const SESSION_ID = "static-session-123";
 
 export default function ChatPage() {
-    const { state } = useAppContext();
+    const { state, dispatch } = useAppContext();
     const { language } = state;
     const t = translations[language];
     const isUrdu = language === 'ur';
+    const { toast } = useToast();
 
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -37,12 +40,20 @@ export default function ChatPage() {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const addMessage = (text: string, sender: 'user' | 'bot') => {
+        const newMessage = { id: Date.now().toString(), text, sender };
+        setMessages(prev => [...prev, newMessage]);
+        if (sender === 'bot') {
+            saveMessage(SESSION_ID, { role: 'bot', text });
+        }
+    };
 
     const handleSendMessage = async (text: string) => {
         if (!text.trim()) return;
 
-        const userMessage: Message = { id: Date.now().toString(), text, sender: 'user' };
-        setMessages(prev => [...prev, userMessage]);
+        addMessage(text, 'user');
         setInputValue('');
         setIsProcessing(true);
 
@@ -52,15 +63,64 @@ export default function ChatPage() {
                 language,
                 sessionId: SESSION_ID,
             });
-            const botMessage: Message = { id: (Date.now() + 1).toString(), text: response.reply, sender: 'bot' };
-            setMessages(prev => [...prev, botMessage]);
+            addMessage(response.reply, 'bot');
         } catch (error) {
             console.error("Chat error:", error);
-            const errorMessage: Message = { id: (Date.now() + 1).toString(), text: t.chat.errorMessage, sender: 'bot' };
-            setMessages(prev => [...prev, errorMessage]);
+            addMessage(t.chat.errorMessage, 'bot');
         } finally {
             setIsProcessing(false);
         }
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Reset the file input so the same file can be uploaded again
+        event.target.value = '';
+
+        if (!file.type.startsWith('image/')) {
+            toast({
+                variant: 'destructive',
+                title: 'Invalid File Type',
+                description: 'Please upload an image file.',
+            });
+            return;
+        }
+
+        setIsProcessing(true);
+        addMessage(`Uploading ${file.name}...`, 'user');
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = async () => {
+            const base64Image = reader.result as string;
+            try {
+                const result = await extractInfoFromDocument({ documentImageUri: base64Image });
+                const { extractedInfo, summary } = result;
+                
+                // Update app context with extracted data
+                dispatch({ type: 'UPDATE_FORM_DATA', payload: extractedInfo });
+
+                // Inform the user what was found
+                addMessage(summary, 'bot');
+                
+                // Follow up with a message asking the user to confirm
+                const confirmationQuery = `I've extracted Name: ${extractedInfo.name}, CNIC: ${extractedInfo.cnic}, and DOB: ${extractedInfo.dob}. Is this correct? Please continue the conversation.`;
+                 const response = await handleChat({ 
+                    query: confirmationQuery, 
+                    language,
+                    sessionId: SESSION_ID,
+                });
+                addMessage(response.reply, 'bot');
+
+            } catch (error) {
+                console.error("Document extraction error:", error);
+                addMessage(t.chat.errorMessage, 'bot');
+            } finally {
+                setIsProcessing(false);
+            }
+        };
     };
     
     return (
@@ -99,7 +159,7 @@ export default function ChatPage() {
                                     )}
                                     dir={isUrdu ? 'rtl' : 'ltr'}
                                 >
-                                    {message.text}
+                                    {message.text.split('\n').map((line, i) => <p key={i}>{line}</p>)}
                                 </div>
                                 {message.sender === 'user' && (
                                      <Avatar className="h-8 w-8 border">
@@ -134,10 +194,21 @@ export default function ChatPage() {
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && !isProcessing && handleSendMessage(inputValue)}
                             disabled={isProcessing}
-                            className={cn('h-12 pr-24 text-base', isUrdu && 'font-urdu')}
+                            className={cn('h-12 pr-36 text-base', isUrdu && 'font-urdu')}
                             dir={isUrdu ? 'rtl' : 'ltr'}
                         />
                         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                           <Button 
+                              type="button" 
+                              variant="outline"
+                              size="icon" 
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={isProcessing}
+                              className="h-10 w-10"
+                            >
+                                <Paperclip className="h-5 w-5" />
+                           </Button>
                            <VoiceInput onTranscription={handleSendMessage} disabled={isProcessing} />
                            <Button 
                               type="button" 
