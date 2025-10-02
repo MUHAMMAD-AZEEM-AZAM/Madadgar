@@ -1,0 +1,20 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Rules for chat functionality
+    // This allows any user to read and write to chat sessions.
+    // For a production app, you would want to restrict this to authenticated
+    // users and only allow them to access their own sessions.
+    match /chat_sessions/{sessionId}/{document=**} {
+      allow read, write: if true;
+    }
+
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
