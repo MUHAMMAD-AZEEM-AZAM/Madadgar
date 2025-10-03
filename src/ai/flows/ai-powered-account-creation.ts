@@ -29,6 +29,20 @@ const AIPoweredAccountCreationOutputSchema = z.object({
 });
 export type AIPoweredAccountCreationOutput = z.infer<typeof AIPoweredAccountCreationOutputSchema>;
 
+// Fallback security questions
+const fallbackQuestions = {
+  en: [
+    { question: "What is your full name?", answer: "" },
+    { question: "What is your CNIC number?", answer: "" },
+    { question: "What is your date of birth?", answer: "" }
+  ],
+  ur: [
+    { question: "آپ کا پورا نام کیا ہے؟", answer: "" },
+    { question: "آپ کا شناختی کارڈ نمبر کیا ہے؟", answer: "" },
+    { question: "آپ کی تاریخ پیدائش کیا ہے؟", answer: "" }
+  ]
+};
+
 export async function aiPoweredAccountCreation(input: AIPoweredAccountCreationInput): Promise<AIPoweredAccountCreationOutput> {
   console.log('[AI] Starting account creation flow with input:', input);
   try {
@@ -36,8 +50,11 @@ export async function aiPoweredAccountCreation(input: AIPoweredAccountCreationIn
     console.log('[AI] Account creation flow result:', result);
     return result;
   } catch (error) {
-    console.error('[AI] Error in account creation flow:', error);
-    throw error;
+    console.error('[AI] Error in account creation flow, using fallback questions:', error);
+    // Return fallback questions instead of throwing error
+    return {
+      securityQuestions: fallbackQuestions[input.language] || fallbackQuestions.en
+    };
   }
 }
 

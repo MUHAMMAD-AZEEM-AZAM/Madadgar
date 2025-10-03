@@ -1,228 +1,226 @@
 "use client";
 
-import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { VoiceInput } from '@/components/madadgar/VoiceInput';
-import { Send, User, Paperclip } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '@/contexts/AppContext';
 import { translations } from '@/lib/translations';
-import { Logo } from '@/components/madadgar/Logo';
+import { ChatMessage } from '@/components/chat/ChatMessage';
+import { ChatInput } from '@/components/chat/ChatInput';
+import { ChatHeader } from '@/components/chat/ChatHeader';
 import { handleChat } from '@/ai/flows/chat-flow';
-import { extractInfoFromDocument } from '@/ai/flows/extract-info-from-document-flow';
-import { useToast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 
-type Message = {
-    id: string;
-    text: string;
-    sender: 'user' | 'bot';
-};
-
-// In a real app, this would be a dynamic session ID, perhaps tied to a user.
-const SESSION_ID = "static-session-123";
+interface Message {
+  id: string;
+  role: 'user' | 'bot';
+  content: string;
+  timestamp: Date;
+  isLoading?: boolean;
+  attachments?: File[];
+  isSearching?: boolean;
+  functionCalls?: any[];
+  pausedForHuman?: boolean;
+}
 
 export default function ChatPage() {
-    const { state, dispatch } = useAppContext();
-    const { language } = state;
-    const t = translations[language];
-    const isUrdu = language === 'ur';
-    const { toast } = useToast();
+  const { state } = useAppContext();
+  const { language } = state;
+  const t = translations[language];
 
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: t.chat.welcomeMessage,
-            sender: 'bot'
-        }
-    ]);
-    const [inputValue, setInputValue] = useState('');
-    const [isProcessing, setIsProcessing] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      role: 'bot',
+      content: language === 'ur'
+        ? `**السلام علیکم! میں مددگار ہوں۔** 🤖
 
-    const addMessage = (text: string, sender: 'user' | 'bot') => {
-        const newMessage = { id: Date.now().toString(), text, sender };
-        setMessages(prev => [...prev, newMessage]);
-        if (sender === 'bot') {
-            saveMessage(SESSION_ID, { role: 'bot', text });
-        }
+میں آپ کی **آن لائن فارم بھرنے** میں مدد کر سکتا ہوں۔ 
+
+**میں کیا کر سکتا ہوں:**
+- عام سوالات کا جواب دینا
+- فارم بھرنے کی رہنمائی
+- ویب سائٹس پر جا کر خودکار فارم بھرنا
+
+**مثالیں:**
+- "NADRA کا فارم کیسے بھرتے ہیں؟" (معلومات)
+- "NADRA کی ویب سائٹ پر جا کر میرا فارم بھریں" (خودکار)`
+        : `**Hello! I'm Madadgar.** 🤖
+
+I can help you with **online form filling** automatically.
+
+**What I can do:**
+- Answer general questions
+- Provide form filling guidance  
+- Navigate websites and fill forms automatically
+
+**Examples:**
+- "How to fill NADRA form?" (information)
+- "Go to NADRA website and fill my form" (automation)`,
+      timestamp: new Date(),
+    }
+  ]);
+
+  const [sessionId] = useState(() => uuidv4());
+  const [isPaused, setIsPaused] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = async (content: string, attachments?: File[]) => {
+    const userMessage: Message = {
+      id: uuidv4(),
+      role: 'user',
+      content,
+      timestamp: new Date(),
+      attachments: attachments || [],
     };
 
-    const handleSendMessage = async (text: string) => {
-        if (!text.trim()) return;
-
-        addMessage(text, 'user');
-        setInputValue('');
-        setIsProcessing(true);
-
-        try {
-            const response = await handleChat({ 
-                query: text, 
-                language,
-                sessionId: SESSION_ID,
-            });
-            addMessage(response.reply, 'bot');
-        } catch (error) {
-            console.error("Chat error:", error);
-            addMessage(t.chat.errorMessage, 'bot');
-        } finally {
-            setIsProcessing(false);
-        }
+    const loadingMessage: Message = {
+      id: uuidv4(),
+      role: 'bot',
+      content: '',
+      timestamp: new Date(),
+      isLoading: true,
+      isSearching: false,
     };
 
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
 
-        // Reset the file input so the same file can be uploaded again
-        event.target.value = '';
+    try {
+      // Use Gemini Agent API for web automation
+      const response = await fetch('/api/gemini-agent/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          message: content
+        })
+      });
 
-        if (!file.type.startsWith('image/')) {
-            toast({
-                variant: 'destructive',
-                title: 'Invalid File Type',
-                description: 'Please upload an image file.',
-            });
-            return;
-        }
+      const data = await response.json();
 
-        setIsProcessing(true);
-        addMessage(`Uploading ${file.name}...`, 'user');
-
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = async () => {
-            const base64Image = reader.result as string;
-            try {
-                const result = await extractInfoFromDocument({ documentImageUri: base64Image });
-                const { extractedInfo, summary } = result;
-                
-                // Update app context with extracted data
-                dispatch({ type: 'UPDATE_FORM_DATA', payload: extractedInfo });
-
-                // Inform the user what was found
-                addMessage(summary, 'bot');
-                
-                // Follow up with a message asking the user to confirm
-                const confirmationQuery = `I've extracted Name: ${extractedInfo.name}, CNIC: ${extractedInfo.cnic}, and DOB: ${extractedInfo.dob}. Is this correct? Please continue the conversation.`;
-                 const response = await handleChat({ 
-                    query: confirmationQuery, 
-                    language,
-                    sessionId: SESSION_ID,
-                });
-                addMessage(response.reply, 'bot');
-
-            } catch (error) {
-                console.error("Document extraction error:", error);
-                addMessage(t.chat.errorMessage, 'bot');
-            } finally {
-                setIsProcessing(false);
+      if (data.status === 'success') {
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === loadingMessage.id
+              ? {
+                ...msg,
+                content: data.response,
+                isLoading: false,
+                isSearching: false,
+                functionCalls: data.functionCalls,
+                pausedForHuman: data.pausedForHuman
+              }
+              : msg
+          )
+        );
+        setIsPaused(data.pausedForHuman || false);
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === loadingMessage.id
+            ? {
+              ...msg,
+              content: language === 'ur'
+                ? 'معافی، کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔'
+                : 'Sorry, something went wrong. Please try again.',
+              isLoading: false,
+              isSearching: false
             }
+            : msg
+        )
+      );
+    }
+  };
+
+  const handleContinue = async () => {
+    setIsPaused(false);
+
+    try {
+      const response = await fetch('/api/gemini-agent/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          action: 'continue'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        const continueMessage: Message = {
+          id: uuidv4(),
+          role: 'bot',
+          content: data.response,
+          timestamp: new Date(),
+          functionCalls: data.functionCalls,
+          pausedForHuman: data.pausedForHuman
         };
-    };
-    
-    return (
-        <div className="flex h-screen flex-col bg-background">
-            <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
-                <div className="container mx-auto flex h-16 items-center justify-center px-4">
-                     <div className={`flex items-center gap-2 text-xl font-bold text-foreground ${isUrdu ? 'font-urdu' : ''}`}>
-                        <Logo className="h-7 w-7 text-primary" />
-                        <span>{t.appName}</span>
-                    </div>
-                </div>
-            </header>
-            <main className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full p-4">
-                    <div className="mx-auto max-w-2xl space-y-6">
-                        {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={cn(
-                                    'flex items-start gap-4',
-                                    message.sender === 'user' ? 'justify-end' : 'justify-start'
-                                )}
-                            >
-                                {message.sender === 'bot' && (
-                                    <Avatar className="h-8 w-8 border">
-                                        <AvatarFallback><Logo className="h-5 w-5 text-muted-foreground"/></AvatarFallback>
-                                    </Avatar>
-                                )}
-                                <div
-                                    className={cn(
-                                        'max-w-[75%] rounded-lg p-3 text-sm shadow-md',
-                                        message.sender === 'user'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-card text-card-foreground',
-                                        isUrdu ? 'font-urdu leading-loose' : 'leading-relaxed'
-                                    )}
-                                    dir={isUrdu ? 'rtl' : 'ltr'}
-                                >
-                                    {message.text.split('\n').map((line, i) => <p key={i}>{line}</p>)}
-                                </div>
-                                {message.sender === 'user' && (
-                                     <Avatar className="h-8 w-8 border">
-                                        <AvatarFallback><User className="h-5 w-5 text-muted-foreground"/></AvatarFallback>
-                                    </Avatar>
-                                )}
-                            </div>
-                        ))}
-                         {isProcessing && (
-                            <div className="flex items-start gap-4 justify-start">
-                                <Avatar className="h-8 w-8 border">
-                                    <AvatarFallback><Logo className="h-5 w-5 text-muted-foreground"/></AvatarFallback>
-                                </Avatar>
-                                <div className="max-w-[75%] rounded-lg p-3 text-sm shadow-md bg-card text-card-foreground">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground" />
-                                        <div className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground [animation-delay:0.2s]" />
-                                        <div className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground [animation-delay:0.4s]" />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </ScrollArea>
-            </main>
-            <footer className="border-t bg-background p-4">
-                <div className="mx-auto max-w-2xl">
-                    <div className="relative">
-                        <Input
-                            placeholder={t.chat.inputPlaceholder}
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && !isProcessing && handleSendMessage(inputValue)}
-                            disabled={isProcessing}
-                            className={cn('h-12 pr-36 text-base', isUrdu && 'font-urdu')}
-                            dir={isUrdu ? 'rtl' : 'ltr'}
-                        />
-                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-                           <Button 
-                              type="button" 
-                              variant="outline"
-                              size="icon" 
-                              onClick={() => fileInputRef.current?.click()}
-                              disabled={isProcessing}
-                              className="h-10 w-10"
-                            >
-                                <Paperclip className="h-5 w-5" />
-                           </Button>
-                           <VoiceInput onTranscription={handleSendMessage} disabled={isProcessing} />
-                           <Button 
-                              type="button" 
-                              size="icon" 
-                              onClick={() => handleSendMessage(inputValue)}
-                              disabled={isProcessing || !inputValue.trim()}
-                              className="h-10 w-10 bg-accent hover:bg-accent/90"
-                            >
-                                <Send className="h-5 w-5" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+
+        setMessages(prev => [...prev, continueMessage]);
+        setIsPaused(data.pausedForHuman || false);
+      }
+    } catch (error) {
+      console.error('Error continuing:', error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      <ChatHeader />
+
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+          {messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              language={language}
+            />
+          ))}
+          <div ref={messagesEndRef} />
         </div>
-    );
+
+        <div className="border-t bg-white p-4">
+          {isPaused && (
+            <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span className={`font-semibold text-yellow-800 ${language === 'ur' ? 'font-urdu' : ''}`}>
+                  {language === 'ur' ? '⏸️ انسانی مداخلت کی ضرورت' : '⏸️ Human intervention needed'}
+                </span>
+              </div>
+              <p className={`text-yellow-700 mb-2 ${language === 'ur' ? 'font-urdu' : ''}`} dir={language === 'ur' ? 'rtl' : 'ltr'}>
+                {language === 'ur'
+                  ? 'براؤزر ونڈو میں CAPTCHA حل کریں، پھر جاری رکھیں۔'
+                  : 'Please solve the CAPTCHA in the browser window, then continue.'
+                }
+              </p>
+              <button
+                onClick={handleContinue}
+                className={`px-3 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600 ${language === 'ur' ? 'font-urdu' : ''}`}
+              >
+                {language === 'ur' ? 'جاری رکھیں' : 'Continue'}
+              </button>
+            </div>
+          )}
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            language={language}
+            disabled={isPaused}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }

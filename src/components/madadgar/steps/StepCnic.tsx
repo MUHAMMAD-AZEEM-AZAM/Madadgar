@@ -44,7 +44,7 @@ export default function StepCnic() {
             placeholder={t.formSteps.cnic.placeholder}
             value={formData.cnic}
             onChange={(e) => updateCnic(e.target.value)}
-            className={`h-12 text-base ${language === 'ur' ? 'font-urdu' : ''}`}
+            className={`h-14 text-lg ${language === 'ur' ? 'font-urdu' : ''}`}
             />
         </div>
         <VoiceInput onTranscription={updateCnic} />

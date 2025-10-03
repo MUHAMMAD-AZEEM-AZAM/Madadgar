@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAppContext } from "@/contexts/AppContext";
 import { translations } from "@/lib/translations";
 import { VoiceInput } from "@/components/madadgar/VoiceInput";
-import { aiPoweredAccountCreation } from "@/ai/flows/ai-powered-account-creation";
+import { aiPoweredAccountCreation, type AIPoweredAccountCreationOutput } from "@/ai/flows/ai-powered-account-creation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -41,11 +41,30 @@ export default function StepSecurityQuestions() {
     const fetchQuestions = async () => {
       setIsLoading(true);
       try {
-        const result = await aiPoweredAccountCreation({ language });
+        // Add timeout to prevent long loading
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), 10000) // 10 second timeout
+        );
+
+        const result = await Promise.race([
+          aiPoweredAccountCreation({ language }),
+          timeoutPromise
+        ]) as AIPoweredAccountCreationOutput;
+
         setQuestions(result.securityQuestions.map(q => ({ ...q, answer: '' })));
       } catch (error) {
         console.error("Failed to fetch security questions", error);
-        // Handle error, maybe show a toast
+        // Fallback to basic questions if AI fails or times out
+        const fallbackQuestions = language === 'ur' ? [
+          { question: "آپ کا پورا نام کیا ہے؟", answer: "" },
+          { question: "آپ کا شناختی کارڈ نمبر کیا ہے؟", answer: "" },
+          { question: "آپ کی تاریخ پیدائش کیا ہے؟", answer: "" }
+        ] : [
+          { question: "What is your full name?", answer: "" },
+          { question: "What is your CNIC number?", answer: "" },
+          { question: "What is your date of birth?", answer: "" }
+        ];
+        setQuestions(fallbackQuestions);
       } finally {
         setIsLoading(false);
       }
@@ -58,25 +77,25 @@ export default function StepSecurityQuestions() {
     newQuestions[currentQuestionIndex].answer = answer;
     setQuestions(newQuestions);
   };
-  
+
   const handleNextQuestion = () => {
-      if (currentQuestionIndex < questions.length - 1) {
-          setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } else {
-          // All questions answered, proceed
-          dispatch({ type: 'SET_SECURITY_ANSWERS', payload: questions });
-          // In a real app, you'd save to backend here.
-          // For now, we simulate success and move to the chat page.
-          router.push('/chat');
-      }
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // All questions answered, proceed
+      dispatch({ type: 'SET_SECURITY_ANSWERS', payload: questions });
+      // In a real app, you'd save to backend here.
+      // For now, we simulate success and move to the chat page.
+      router.push('/chat');
+    }
   };
 
   const handlePrevQuestion = () => {
-      if (currentQuestionIndex > 0) {
-          setCurrentQuestionIndex(currentQuestionIndex - 1);
-      } else {
-          dispatch({ type: 'PREV_STEP' }); // Go back to save choice
-      }
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else {
+      dispatch({ type: 'PREV_STEP' }); // Go back to save choice
+    }
   }
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -92,9 +111,9 @@ export default function StepSecurityQuestions() {
         isNextDisabled
       >
         <div className="space-y-8">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
         </div>
       </FormWrapper>
     );
@@ -115,16 +134,16 @@ export default function StepSecurityQuestions() {
     >
       <div className="space-y-8">
         <div className="space-y-4">
-            <Label htmlFor="security-answer" className={cn("text-muted-foreground text-sm leading-relaxed", isUrdu && "font-urdu leading-loose")} dir={isUrdu ? 'rtl' : 'ltr'}>
-                {`(${currentQuestionIndex + 1}/${questions.length}) ${currentQuestion.question}`}
-            </Label>
-            <Input
-                id="security-answer"
-                value={currentQuestion.answer}
-                onChange={(e) => updateAnswer(e.target.value)}
-                dir={isUrdu ? 'rtl' : 'ltr'}
-                className={`h-12 text-base ${isUrdu ? 'font-urdu' : ''}`}
-            />
+          <Label htmlFor="security-answer" className={cn("text-muted-foreground text-sm leading-relaxed", isUrdu && "font-urdu leading-loose")} dir={isUrdu ? 'rtl' : 'ltr'}>
+            {`(${currentQuestionIndex + 1}/${questions.length}) ${currentQuestion.question}`}
+          </Label>
+          <Input
+            id="security-answer"
+            value={currentQuestion.answer}
+            onChange={(e) => updateAnswer(e.target.value)}
+            dir={isUrdu ? 'rtl' : 'ltr'}
+            className={`h-14 text-lg ${isUrdu ? 'font-urdu' : ''}`}
+          />
         </div>
         <VoiceInput onTranscription={updateAnswer} />
       </div>

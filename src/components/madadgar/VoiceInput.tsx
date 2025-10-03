@@ -23,25 +23,25 @@ export function VoiceInput({ onTranscription, disabled }: VoiceInputProps) {
       case 'recording':
         return (
           <>
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive/90"></span>
+            <span className="relative flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
             </span>
-            <span className="ml-2">{t.voiceInput.recording}</span>
+            <span className="ml-3 text-base font-medium">{t.voiceInput.recording}</span>
           </>
         );
       case 'processing':
         return (
           <>
-            <Loader className="animate-spin" />
-            <span className="ml-2">{t.voiceInput.processing}</span>
+            <Loader className="animate-spin h-5 w-5 text-blue-600" />
+            <span className="ml-3 text-base font-medium">{t.voiceInput.processing}</span>
           </>
         );
        case 'error':
         return (
             <>
-                <AlertCircle />
-                <span className="ml-2">{t.voiceInput.error}</span>
+                <AlertCircle className="h-5 w-5 text-red-600" />
+                <span className="ml-3 text-base font-medium">{t.voiceInput.error}</span>
             </>
         );
       case 'permission_pending':
@@ -49,20 +49,25 @@ export function VoiceInput({ onTranscription, disabled }: VoiceInputProps) {
       default:
         return (
           <>
-            <Mic />
-            <span className="ml-2 sr-only">{t.voiceInput.speakNow}</span>
+            <Mic className="h-5 w-5 text-blue-600" />
+            <span className="ml-3 text-base font-medium">{t.voiceInput.speakNow}</span>
           </>
         );
     }
   };
 
-  const isChatPage = true; // Simplified for this context
-
   return (
     <Button
         type="button"
-        variant="outline"
-        className={cn("w-full", state.language === 'ur' && "font-urdu", isChatPage && "w-auto h-10 px-3" )}
+        variant={recorderState === 'recording' ? 'destructive' : 'outline'}
+        size="lg"
+        className={cn(
+          "w-full h-14 text-base font-medium transition-all duration-200 border-2 shadow-sm",
+          state.language === 'ur' && "font-urdu",
+          recorderState === 'recording' && "bg-red-50 border-red-300 text-red-700 hover:bg-red-100 shadow-red-100",
+          recorderState === 'idle' && "border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 shadow-blue-100",
+          recorderState === 'processing' && "border-blue-300 text-blue-700 bg-blue-50 shadow-blue-100"
+        )}
         onClick={toggleRecording}
         disabled={disabled || (recorderState !== 'idle' && recorderState !== 'recording')}
     >

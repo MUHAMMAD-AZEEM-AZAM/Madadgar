@@ -35,7 +35,7 @@ export default function StepDob() {
             placeholder={t.formSteps.dob.placeholder}
             value={formData.dob}
             onChange={(e) => updateDob(e.target.value)}
-            className={`h-12 text-base ${language === 'ur' ? 'font-urdu' : ''}`}
+            className={`h-14 text-lg ${language === 'ur' ? 'font-urdu' : ''}`}
             />
         </div>
         <VoiceInput onTranscription={updateDob} />

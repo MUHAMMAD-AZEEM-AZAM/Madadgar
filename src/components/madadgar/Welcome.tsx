@@ -48,7 +48,7 @@ export default function Welcome() {
           <div className="mt-10 flex flex-col items-center gap-8">
             <LanguageSwitcher />
             <Button asChild size="lg" className={cn("w-full max-w-xs shadow-lg bg-accent hover:bg-accent/90 text-accent-foreground", language === 'ur' && "font-urdu")}>
-              <Link href="/start">
+              <Link href="/chat">
                 {t.getStarted}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

@@ -37,7 +37,7 @@ export default function StepName() {
             value={formData.name}
             onChange={(e) => updateName(e.target.value)}
             dir={language === 'ur' ? 'rtl' : 'ltr'}
-            className={`h-12 text-base ${language === 'ur' ? 'font-urdu' : ''}`}
+            className={`h-14 text-lg ${language === 'ur' ? 'font-urdu' : ''}`}
           />
         </div>
         <VoiceInput onTranscription={updateName} />

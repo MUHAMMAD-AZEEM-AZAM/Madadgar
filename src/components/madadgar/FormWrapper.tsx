@@ -69,8 +69,8 @@ export function FormWrapper({
       <CardHeader className="space-y-6 pb-6">
         <Progress value={progressValue} className="h-2" />
         <div className="space-y-4">
-          <CardTitle className={cn("text-2xl md:text-3xl font-headline leading-tight", isUrdu && "font-urdu leading-normal", titleClassName)} dir={isUrdu ? 'rtl' : 'ltr'}>{title}</CardTitle>
-          <CardDescription className={cn("text-base leading-relaxed", isUrdu && "font-urdu leading-loose")} dir={isUrdu ? 'rtl' : 'ltr'}>{description}</CardDescription>
+          <CardTitle className={cn("text-3xl md:text-4xl font-headline leading-tight", isUrdu && "font-urdu leading-normal", titleClassName)} dir={isUrdu ? 'rtl' : 'ltr'}>{title}</CardTitle>
+          <CardDescription className={cn("text-lg leading-relaxed", isUrdu && "font-urdu leading-loose")} dir={isUrdu ? 'rtl' : 'ltr'}>{description}</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-8 py-6">
